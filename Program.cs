@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Serialization;
+using googleassistantcsharpdemo.api;
+using googleassistantcsharpdemo.authentication;
 using googleassistantcsharpdemo.config;
-
+using googleassistantcsharpdemo.device;
 
 namespace googleassistantcsharpdemo
 {
@@ -28,7 +30,19 @@ namespace googleassistantcsharpdemo
             FileStream fsin = new FileStream("resources/reference.conf", FileMode.Open, FileAccess.Read, FileShare.None);
             FactoryConf fc = (FactoryConf)xs.Deserialize(fsin);
 
-            logger.Debug("AL -- " + fc.assistantConf.chunkSize);
+            // Authentication
+            AuthenticationHelper authenticationHelper = new AuthenticationHelper(fc.authenticationConf);
+            authenticationHelper.authenticate();
+
+            // Register Device model and device
+            DeviceRegister deviceRegister = new DeviceRegister(fc.deviceRegisterConf, authenticationHelper.getOAuthCredentials().accessToken);
+            deviceRegister.register();
+
+
+            // Build the client (stub)
+            AssistantClient assistantClient = new AssistantClient(authenticationHelper.getOAuthCredentials(), fc.assistantConf,
+               deviceRegister.getDeviceModel(), deviceRegister.getDevice(), fc.ioConf);
+
         }
     }
 }

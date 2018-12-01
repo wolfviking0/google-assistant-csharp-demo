@@ -42,9 +42,20 @@
     <Compile Include="config\AudioConf.cs" />
     <Compile Include="config\FactoryConf.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="authentication\AuthenticationHelper.cs" />
+    <Compile Include="authentication\OAuthClient.cs" />
+    <Compile Include="authentication\OAuthCredentials.cs" />
+    <Compile Include="device\Device.cs" />
+    <Compile Include="device\DeviceModel.cs" />
+    <Compile Include="device\DeviceInterfqce.cs" />
+    <Compile Include="device\DeviceRegister.cs" />
+    <Compile Include="api\AssistantClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="config\" />
+    <Folder Include="authentication\" />
+    <Folder Include="device\" />
+    <Folder Include="api\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="resources\reference.conf">
