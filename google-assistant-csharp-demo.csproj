@@ -30,9 +30,26 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Xml.Serialization" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="config\AssistantConf.cs" />
+    <Compile Include="config\AuthenticationConf.cs" />
+    <Compile Include="config\DeviceRegisterConf.cs" />
+    <Compile Include="config\IoConf.cs" />
+    <Compile Include="config\AudioConf.cs" />
+    <Compile Include="config\FactoryConf.cs" />
+    <Compile Include="Logger.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="config\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="resources\reference.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
