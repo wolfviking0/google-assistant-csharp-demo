@@ -7,12 +7,25 @@ namespace googleassistantcsharpdemo
         private readonly string datetimeFormat;
         private readonly string logFilename;
 
+        private static Logger _instance;
+
+        public static void Init(bool append = false) {
+            if (_instance == null)
+                _instance = new Logger(append);
+
+        }
+
+        public static Logger Get()
+        {
+            return _instance;
+        }
+
         /// <summary>
         /// Initiate an instance of SimpleLogger class constructor.
         /// If log file does not exist, it will be created automatically.
         /// </summary>
         /// 
-        public Logger(bool append = false)
+        protected Logger(bool append)
         {
             datetimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
             logFilename = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + FILE_EXT;

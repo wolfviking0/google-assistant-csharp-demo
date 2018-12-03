@@ -12,7 +12,7 @@ namespace googleassistantcsharpdemo
     {
         public static void Main(string[] args)
         {
-            Logger logger = new Logger();
+            Logger.Init();
 
             // GENERATE THE CONF FILE
             //FactoryConf fc = new FactoryConf();
@@ -27,7 +27,7 @@ namespace googleassistantcsharpdemo
 
             // LOAD REFERENCES CONF
             XmlSerializer xs = new XmlSerializer(typeof(FactoryConf));
-            FileStream fsin = new FileStream("resources/reference.conf", FileMode.Open, FileAccess.Read, FileShare.None);
+            FileStream fsin = new FileStream("resources/reference_private.conf", FileMode.Open, FileAccess.Read, FileShare.None);
             FactoryConf fc = (FactoryConf)xs.Deserialize(fsin);
 
             // Authentication
@@ -35,13 +35,13 @@ namespace googleassistantcsharpdemo
             authenticationHelper.authenticate();
 
             // Register Device model and device
-            DeviceRegister deviceRegister = new DeviceRegister(fc.deviceRegisterConf, authenticationHelper.getOAuthCredentials().accessToken);
+            DeviceRegister deviceRegister = new DeviceRegister(fc.deviceRegisterConf, authenticationHelper.getOAuthCredentials().access_token);
             deviceRegister.register();
 
 
             // Build the client (stub)
-            AssistantClient assistantClient = new AssistantClient(authenticationHelper.getOAuthCredentials(), fc.assistantConf,
-               deviceRegister.getDeviceModel(), deviceRegister.getDevice(), fc.ioConf);
+            //AssistantClient assistantClient = new AssistantClient(authenticationHelper.getOAuthCredentials(), fc.assistantConf,
+            //deviceRegister.getDeviceModel(), deviceRegister.getDevice(), fc.ioConf);
 
         }
     }

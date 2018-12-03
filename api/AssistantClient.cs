@@ -11,10 +11,6 @@ namespace googleassistantcsharpdemo.api
 
         private IoConf ioConf;
 
-        public AssistantClient()
-        {
-        }
-
         public AssistantClient(OAuthCredentials oAuthCredentials, AssistantConf assistantConf, DeviceModel deviceModel, Device device, IoConf ioConf)
         {
             this.assistantConf = assistantConf;

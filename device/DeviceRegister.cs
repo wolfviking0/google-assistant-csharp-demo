@@ -17,21 +17,28 @@ namespace googleassistantcsharpdemo.device
         {
             this.deviceRegisterConf = deviceRegisterConf;
 
+            deviceInterface = new DeviceInterface(deviceRegisterConf.apiEndpoint, accessToken);
         }
 
-        internal void register()
+        public void register()
         {
-            throw new NotImplementedException();
+            string projectId = deviceRegisterConf.projectId;
+
+            deviceModel = registerModel(projectId);
         }
 
-        internal DeviceModel getDeviceModel()
+        public DeviceModel getDeviceModel()
         {
             return deviceModel;
         }
 
-        internal Device getDevice()
+        public Device getDevice()
         {
             return device;
+        }
+
+        private DeviceModel registerModel(string projectId) {
+            return null;
         }
     }
 }
