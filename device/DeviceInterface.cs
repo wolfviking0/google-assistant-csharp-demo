@@ -8,22 +8,31 @@ namespace googleassistantcsharpdemo.device
 {
     public class DeviceInterface
     {
-        private HttpWebRequest request;
+        private string apiEndpoint;
+        private string accessToken;
 
         public DeviceInterface(string apiEndpoint, string accessToken)
         {
-            request = (HttpWebRequest)WebRequest.Create(apiEndpoint);
-            request.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + accessToken);
+            this.accessToken = accessToken;
+            this.apiEndpoint = apiEndpoint;
         }
     
-        DeviceModel registerModel() {
+        public DeviceModel registerModel(string projectId, DeviceModel deviceModel) {
+
             try
             {
-                string postData = string.Format("refresh_token={0}&client_id={1}&client_secret={2}&grant_type={3}", refresh_token, client_id, client_secret, grant_type);
-                var data = Encoding.ASCII.GetBytes(postData);
+                string url = string.Format("{0}v1alpha2/projects/{1}/deviceModels/", apiEndpoint, projectId);
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + accessToken);
+
+                //var data = Encoding.ASCII.GetBytes(postData);
+
+                string body = JsonConvert.SerializeObject(deviceModel);
+                var data = Encoding.ASCII.GetBytes(body);
 
                 request.Method = "POST";
-                request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
+                request.ContentType = "application/json";
                 request.ContentLength = data.Length;
 
                 using (var stream = request.GetRequestStream())

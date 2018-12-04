@@ -9,17 +9,21 @@ namespace googleassistantcsharpdemo.authentication
 {
     public class OAuthClient
     {
-        private HttpWebRequest request;
+        private string googleOAuthEndpoint;
 
         public OAuthClient(string googleOAuthEndpoint)
         {
-            request = (HttpWebRequest)WebRequest.Create(googleOAuthEndpoint);
+            this.googleOAuthEndpoint = googleOAuthEndpoint;
         }
 
         public OAuthCredentials getAccessToken(string code, string client_id, string client_secret, string redirect_uri, string grant_type)
         {
             try
             {
+                string url = string.Format("{0}token", googleOAuthEndpoint);
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
                 string postData = string.Format("code={0}&client_id={1}&client_secret={2}&redirect_uri={3}&grant_type={4}", HttpUtility.UrlEncode(code), client_id, client_secret, redirect_uri, grant_type);
                 var data = Encoding.ASCII.GetBytes(postData);
 
@@ -48,6 +52,10 @@ namespace googleassistantcsharpdemo.authentication
         {
             try
             {
+                string url = string.Format("{0}token", googleOAuthEndpoint);
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
                 string postData = string.Format("refresh_token={0}&client_id={1}&client_secret={2}&grant_type={3}", refresh_token, client_id, client_secret, grant_type);
                 var data = Encoding.ASCII.GetBytes(postData);
 

@@ -37,6 +37,7 @@ namespace googleassistantcsharpdemo.authentication
                 else {
                     OAuthCredentials optCredentials = requestAccessToken();
                     if (optCredentials != null) {
+                        oAuthCredentials = optCredentials;
                         Logger.Get().Debug("Access Token: " + oAuthCredentials.access_token);
                         saveCredentials(); 
                     } else {
