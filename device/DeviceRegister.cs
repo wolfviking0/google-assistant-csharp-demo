@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Xml.Serialization;
 using googleassistantcsharpdemo.config;
+using Newtonsoft.Json;
 
 namespace googleassistantcsharpdemo.device
 {
@@ -27,6 +27,8 @@ namespace googleassistantcsharpdemo.device
             string projectId = deviceRegisterConf.projectId;
 
             deviceModel = registerModel(projectId);
+
+            device = registerInstance(projectId, deviceModel.deviceModelId);
         }
 
         public DeviceModel getDeviceModel()
@@ -44,9 +46,11 @@ namespace googleassistantcsharpdemo.device
             if (File.Exists(filePath)) {
                 try
                 {
-                    XmlSerializer xs = new XmlSerializer(targetClass);
-                    FileStream fsin = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
-                    return (T)xs.Deserialize(fsin);
+                    using (StreamReader file = File.OpenText(filePath))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        return (T)serializer.Deserialize(file, typeof(T));
+                    }
                 }
                 catch (IOException e)
                 {
@@ -88,15 +92,55 @@ namespace googleassistantcsharpdemo.device
                 DeviceModel response = deviceInterface.registerModel(projectId, devModel);
 
                 if (response != null) {
-                    XmlSerializer xs = new XmlSerializer(typeof(DeviceModel));
-                    FileStream fsout = new FileStream(deviceRegisterConf.deviceModelFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                    xs.Serialize(fsout, response);
-
+                    using (StreamWriter file = File.CreateText(deviceRegisterConf.deviceModelFilePath))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Formatting = Formatting.Indented;
+                        serializer.Serialize(file, response);
+                    }
                     return response;
                 }
             } catch (IOException e) 
             {
-                Logger.Get().Error("Error during registration of the device mode " + e);
+                Logger.Get().Error("Error during registration of the device model " + e);
+            }
+
+            return null;
+        }
+
+
+        private Device registerInstance(string projectId, string modelId)
+        {
+            Device optionalDevice = readFromFile<Device>(deviceRegisterConf.deviceInstanceFilePath, typeof(Device));
+            if (optionalDevice != null)
+            {
+                Logger.Get().Debug("Got device from file");
+                return optionalDevice;
+            }
+
+
+            Device dev = new Device();
+            dev.id = Guid.NewGuid().ToString();
+            dev.modelId = modelId;
+
+            // Here we use the Google Assistant Service
+            dev.clientType = "SDK_SERVICE";
+
+            try {
+                Logger.Get().Debug("Creating device instance");
+                Device response = deviceInterface.registerDevice(projectId, dev);
+                if (response != null)
+                {
+                    using (StreamWriter file = File.CreateText(deviceRegisterConf.deviceInstanceFilePath))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Formatting = Formatting.Indented;
+                        serializer.Serialize(file, response);
+                    }
+                    return response;
+                }
+            } catch (IOException e) {
+                Logger.Get().Error("Error during registration of the device instance " + e);
             }
 
             return null;

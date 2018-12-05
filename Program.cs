@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Xml.Serialization;
 using googleassistantcsharpdemo.api;
 using googleassistantcsharpdemo.authentication;
 using googleassistantcsharpdemo.config;
 using googleassistantcsharpdemo.device;
+using Newtonsoft.Json;
 
 namespace googleassistantcsharpdemo
 {
@@ -14,7 +14,7 @@ namespace googleassistantcsharpdemo
         {
             Logger.Init();
 
-            // GENERATE THE CONF FILE
+            // GENERATE THE XML CONF FILE
             //FactoryConf fc = new FactoryConf();
             //fc.assistantConf = new AssistantConf();
             //fc.audioConf = new AudioConf();
@@ -25,10 +25,21 @@ namespace googleassistantcsharpdemo
             //FileStream fsout = new FileStream("reference.conf", FileMode.Create, FileAccess.Write, FileShare.None);
             //xs.Serialize(fsout, fc);
 
+            // GENERATE THE JSON CONF FILE
+            //using (StreamWriter file = File.CreateText("resources/reference_private.conf"))
+            //{
+            //    JsonSerializer serializer = new JsonSerializer();
+            //    serializer.Formatting = Formatting.Indented;
+            //    serializer.Serialize(file, fc);
+            //}
+
             // LOAD REFERENCES CONF
-            XmlSerializer xs = new XmlSerializer(typeof(FactoryConf));
-            FileStream fsin = new FileStream("resources/reference_private.conf", FileMode.Open, FileAccess.Read, FileShare.None);
-            FactoryConf fc = (FactoryConf)xs.Deserialize(fsin);
+            FactoryConf fc = null;
+            using (StreamReader file = File.OpenText("resources/reference_private.conf"))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                fc = (FactoryConf)serializer.Deserialize(file, typeof(FactoryConf));
+            }
 
             // Authentication
             AuthenticationHelper authenticationHelper = new AuthenticationHelper(fc.authenticationConf);

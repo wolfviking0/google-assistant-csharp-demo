@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Xml.Serialization;
 using googleassistantcsharpdemo.config;
+using Newtonsoft.Json;
 
 namespace googleassistantcsharpdemo.authentication
 {
@@ -28,9 +28,11 @@ namespace googleassistantcsharpdemo.authentication
                 {
                     Logger.Get().Debug("Loading oAuth credentials from file");
 
-                    XmlSerializer xs = new XmlSerializer(typeof(OAuthCredentials));
-                    FileStream fsin = new FileStream(authenticationConf.credentialsFilePath, FileMode.Open, FileAccess.Read, FileShare.None);
-                    oAuthCredentials = (OAuthCredentials)xs.Deserialize(fsin);
+                    using (StreamReader file = File.OpenText(authenticationConf.credentialsFilePath))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        oAuthCredentials = (OAuthCredentials)serializer.Deserialize(file, typeof(OAuthCredentials));
+                    }
 
                     Logger.Get().Debug("Access Token: " + oAuthCredentials.access_token);
                 }
@@ -108,10 +110,12 @@ namespace googleassistantcsharpdemo.authentication
             try
             {
                 oAuthCredentials.expiration_time = DateTimeOffset.Now.ToUnixTimeMilliseconds() + oAuthCredentials.expires_in * 1000;
-
-                XmlSerializer xs = new XmlSerializer(typeof(OAuthCredentials));
-                FileStream fsout = new FileStream(authenticationConf.credentialsFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                xs.Serialize(fsout, oAuthCredentials);
+                using (StreamWriter file = File.CreateText(authenticationConf.credentialsFilePath))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
+                    serializer.Serialize(file, oAuthCredentials);
+                }
             }
             catch (Exception e)
             {
