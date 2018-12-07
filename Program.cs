@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using googleassistantcsharpdemo.api;
 using googleassistantcsharpdemo.authentication;
 using googleassistantcsharpdemo.config;
@@ -51,9 +52,31 @@ namespace googleassistantcsharpdemo
 
 
             // Build the client (stub)
-            //AssistantClient assistantClient = new AssistantClient(authenticationHelper.getOAuthCredentials(), fc.assistantConf,
-            //deviceRegister.getDeviceModel(), deviceRegister.getDevice(), fc.ioConf);
+            AssistantClient assistantClient = new AssistantClient(authenticationHelper.getOAuthCredentials(), fc.authenticationConf, fc.assistantConf,
+            deviceRegister.getDeviceModel(), deviceRegister.getDevice());
 
+
+            // Main loop
+            //while (true)
+            {
+                // Check if we need to refresh the access token to request the api
+                if (authenticationHelper.expired())
+                {
+                    authenticationHelper.refreshAccessToken();
+
+                    assistantClient.updateCredentials(authenticationHelper.getOAuthCredentials());
+                }
+
+                Console.WriteLine("Tap your request and press enter...");
+                string query = Console.ReadLine();
+              
+                byte[] request = Encoding.ASCII.GetBytes(query);
+
+                // requesting assistant with text query
+                assistantClient.requestAssistant(request);
+
+                Logger.Get().Debug(assistantClient.getTextResponse());
+            }
         }
     }
 }
