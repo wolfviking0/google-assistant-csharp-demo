@@ -18,7 +18,7 @@ namespace GAssistant
 
             // LOAD REFERENCES CONF
             FactoryConf fc = null;
-            using (StreamReader file = File.OpenText("resources/reference_private.conf"))
+            using (StreamReader file = File.OpenText("resources/reference.conf"))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 fc = (FactoryConf)serializer.Deserialize(file, typeof(FactoryConf));
