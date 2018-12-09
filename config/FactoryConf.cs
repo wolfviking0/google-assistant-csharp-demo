@@ -1,5 +1,5 @@
 ﻿using System;
-namespace googleassistantcsharpdemo.config
+namespace GAssistant.Config
 {
     [Serializable]
     public class FactoryConf

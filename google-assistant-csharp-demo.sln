@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "google-assistant-csharp-demo", "google-assistant-csharp-demo.csproj", "{42C395F0-70B3-4CCA-9EA8-A67962C27F11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GAssistant", "GAssistant.csproj", "{42C395F0-70B3-4CCA-9EA8-A67962C27F11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

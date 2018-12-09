@@ -4,7 +4,7 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace googleassistantcsharpdemo.device
+namespace GAssistant.Device
 {
     public class DeviceInterface
     {
@@ -17,9 +17,8 @@ namespace googleassistantcsharpdemo.device
             this.apiEndpoint = apiEndpoint;
         }
 
-        public DeviceModel registerModel(string projectId, DeviceModel deviceModel)
+        public DeviceModel RegisterModel(string projectId, DeviceModel deviceModel)
         {
-
             try
             {
                 string url = string.Format("{0}v1alpha2/projects/{1}/deviceModels/", apiEndpoint, projectId);
@@ -46,14 +45,13 @@ namespace googleassistantcsharpdemo.device
 
             catch (WebException ex)
             {
-                Logger.Get().Error("Error during registerModel" + ex);
+                Logger.Get().Error("Error during RegisterModel : " + ex);
                 return null;
             }
         }
 
-        public Device registerDevice(string projectId, Device device)
+        public DeviceDesc RegisterDevice(string projectId, DeviceDesc device)
         {
-
             try
             {
                 string url = string.Format("{0}v1alpha2/projects/{1}/devices/", apiEndpoint, projectId);
@@ -75,12 +73,12 @@ namespace googleassistantcsharpdemo.device
 
                 var response = (HttpWebResponse)request.GetResponse();
                 var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                return JsonConvert.DeserializeObject<Device>(responseString);
+                return JsonConvert.DeserializeObject<DeviceDesc>(responseString);
             }
 
             catch (WebException ex)
             {
-                Logger.Get().Error("Error during registerDevice" + ex);
+                Logger.Get().Error("Error during RegisterDevice : " + ex);
                 return null;
             }
         }

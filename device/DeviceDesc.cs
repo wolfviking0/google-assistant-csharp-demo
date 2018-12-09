@@ -1,7 +1,7 @@
 ﻿using System;
-namespace googleassistantcsharpdemo.device
+namespace GAssistant.Device
 {
-    public class Device
+    public class DeviceDesc
     {
         public string id;
 

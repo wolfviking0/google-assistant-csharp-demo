@@ -5,7 +5,7 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 
-namespace googleassistantcsharpdemo.authentication
+namespace GAssistant.Authentication
 {
     public class OAuthClient
     {
@@ -16,7 +16,7 @@ namespace googleassistantcsharpdemo.authentication
             this.googleOAuthEndpoint = googleOAuthEndpoint;
         }
 
-        public OAuthCredentials getAccessToken(string code, string client_id, string client_secret, string redirect_uri, string grant_type)
+        public OAuthCredentials GetAccessToken(string code, string client_id, string client_secret, string redirect_uri, string grant_type)
         {
             try
             {
@@ -43,12 +43,12 @@ namespace googleassistantcsharpdemo.authentication
 
             catch (WebException ex)
             {
-                Logger.Get().Error("Error during getAccessToken" + ex);
+                Logger.Get().Error("Error during GetAccessToken : " + ex);
                 return null;
             }
         }
 
-        public OAuthCredentials refreshAccessToken(string refresh_token, string client_id, string client_secret, string grant_type)
+        public OAuthCredentials RefreshAccessToken(string refresh_token, string client_id, string client_secret, string grant_type)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace googleassistantcsharpdemo.authentication
 
             catch (WebException ex)
             {
-                Logger.Get().Error("Error during getAccessToken" + ex);
+                Logger.Get().Error("Error during RefreshAccessToken : " + ex);
                 return null;
             }
         }

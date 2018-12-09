@@ -1,5 +1,5 @@
 ﻿using System;
-namespace googleassistantcsharpdemo.device
+namespace GAssistant.Device
 {
     public class DeviceModel
     {

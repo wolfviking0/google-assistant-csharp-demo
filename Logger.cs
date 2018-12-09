@@ -1,5 +1,5 @@
 ﻿using System;
-namespace googleassistantcsharpdemo
+namespace GAssistant
 {
     public class Logger
     {

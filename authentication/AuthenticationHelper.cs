@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using googleassistantcsharpdemo.config;
+using GAssistant.Config;
 using Newtonsoft.Json;
 
-namespace googleassistantcsharpdemo.authentication
+namespace GAssistant.Authentication
 {
 
     public class AuthenticationHelper
@@ -21,69 +21,61 @@ namespace googleassistantcsharpdemo.authentication
             oAuthClient = new OAuthClient(authenticationConf.googleOAuthEndpoint);
         }
 
-        public void authenticate()
+        public void Authenticate()
         {
             try {
                 if (File.Exists(authenticationConf.credentialsFilePath))
                 {
-                    Logger.Get().Debug("Loading oAuth credentials from file");
-
                     using (StreamReader file = File.OpenText(authenticationConf.credentialsFilePath))
                     {
                         JsonSerializer serializer = new JsonSerializer();
                         oAuthCredentials = (OAuthCredentials)serializer.Deserialize(file, typeof(OAuthCredentials));
                     }
-
-                    Logger.Get().Debug("Access Token: " + oAuthCredentials.access_token);
                 }
                 else {
-                    OAuthCredentials optCredentials = requestAccessToken();
+                    OAuthCredentials optCredentials = RequestAccessToken();
                     if (optCredentials != null) {
                         oAuthCredentials = optCredentials;
-                        Logger.Get().Debug("Access Token: " + oAuthCredentials.access_token);
-                        saveCredentials(); 
+                        SaveCredentials(); 
                     } else {
-                        throw new Exception("requestAccessToken error");
+                        Logger.Get().Error("Request AccessToken Error");
                     }
                 }
 
             } catch (Exception e) {
-                Logger.Get().Error("Error during authentication" + e);
+                Logger.Get().Error("Error during Authenticate : " + e);
             }
         }
 
-        public bool expired()
+        public bool Expired()
         {
             return oAuthCredentials.expiration_time - DateTimeOffset.Now.ToUnixTimeMilliseconds() < authenticationConf.maxDelayBeforeRefresh;
         }
 
-        public OAuthCredentials getOAuthCredentials()
+        public OAuthCredentials GetOAuthCredentials()
         {
             return oAuthCredentials;
         }
 
-        public OAuthCredentials refreshAccessToken() {
-            Logger.Get().Debug("Refreshing access token");
-
-            OAuthCredentials response = oAuthClient.refreshAccessToken(
+        public OAuthCredentials RefreshAccessToken() {
+            OAuthCredentials response = oAuthClient.RefreshAccessToken(
                     oAuthCredentials.refresh_token,
                     authenticationConf.clientId,
                     authenticationConf.clientSecret,
                     "refresh_token");
 
             if (response != null) {
-                Logger.Get().Debug("New Access Token: " + response.access_token);
                 oAuthCredentials.access_token = response.access_token;
                 oAuthCredentials.expires_in = response.expires_in;
                 oAuthCredentials.token_type = response.token_type;
-                saveCredentials();
+                SaveCredentials();
                 return oAuthCredentials;
             } else {
                 return null;
             }
         }
 
-        public OAuthCredentials requestAccessToken() {
+        private OAuthCredentials RequestAccessToken() {
             string url = "https://accounts.google.com/o/oauth2/v2/auth?" +
             "scope=" + authenticationConf.scope + "&" +
             "response_type=code&" +
@@ -92,11 +84,11 @@ namespace googleassistantcsharpdemo.authentication
 
             System.Diagnostics.Process.Start(url);
 
-            Console.WriteLine("Allow the application in your browser and copy the authorization code in the console");
-            Console.WriteLine("Enter authentification : ");
+            Logger.Get().Debug("Allow the application in your browser and copy the authorization code in the console");
+            Logger.Get().Debug("Enter authentification : ");
             string code = Console.ReadLine();
 
-            OAuthCredentials response = oAuthClient.getAccessToken(
+            OAuthCredentials response = oAuthClient.GetAccessToken(
               code,
               authenticationConf.clientId,
               authenticationConf.clientSecret,
@@ -106,7 +98,7 @@ namespace googleassistantcsharpdemo.authentication
             return response;
         }
 
-        public void saveCredentials() {
+        private void SaveCredentials() {
             try
             {
                 oAuthCredentials.expiration_time = DateTimeOffset.Now.ToUnixTimeMilliseconds() + oAuthCredentials.expires_in * 1000;
@@ -119,7 +111,7 @@ namespace googleassistantcsharpdemo.authentication
             }
             catch (Exception e)
             {
-                Logger.Get().Error("Error saving credentials" + e);
+                Logger.Get().Error("Error during SaveCredentials : " + e);
             }
         }
     }

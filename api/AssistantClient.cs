@@ -1,17 +1,21 @@
 ﻿using System;
-using googleassistantcsharpdemo.authentication;
-using googleassistantcsharpdemo.config;
-using googleassistantcsharpdemo.device;
+using GAssistant.Authentication;
+using GAssistant.Config;
+using GAssistant.Device;
 
-using Google.Assistant.Embedded.V1Alpha1;
+using Google.Assistant.Embedded.V1Alpha2;
 using Grpc.Core;
 using Grpc.Auth;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Auth.OAuth2.Responses;
 using Newtonsoft.Json;
+using Google.Protobuf;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.IO;
 
-namespace googleassistantcsharpdemo.api
+namespace GAssistant.Api
 {
     public class AssistantClient
     {
@@ -20,19 +24,27 @@ namespace googleassistantcsharpdemo.api
         private AuthenticationConf authenticationConf;
         private AssistantConf assistantConf;
         private DeviceModel deviceModel;
-        private Device device;
+        private DeviceDesc device;
+        private GoogleAuthorizationCodeFlow googleAuthFlow;
 
+        private ByteString currentConversationState = ByteString.Empty;
         private Channel channel;
         private UserCredential credential;
 
-        public AssistantClient(OAuthCredentials oAuthCredentials, AuthenticationConf authenticationConf, AssistantConf assistantConf, DeviceModel deviceModel, Device device)
+        IClientStreamWriter<AssistRequest> requestStream;
+        IAsyncStreamReader<AssistResponse> responseStream;
+
+        private byte[] currentAudioResponse;
+        private string currentTextResponse;
+
+        public AssistantClient(OAuthCredentials oAuthCredentials, AuthenticationConf authenticationConf, AssistantConf assistantConf, DeviceModel deviceModel, DeviceDesc device)
         {
             this.authenticationConf = authenticationConf;
             this.assistantConf = assistantConf;
             this.deviceModel = deviceModel;
             this.device = device;
 
-            GoogleAuthorizationCodeFlow googleAuthFlow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer()
+            googleAuthFlow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer()
             {
                 ClientSecrets = new ClientSecrets()
                 {
@@ -41,6 +53,11 @@ namespace googleassistantcsharpdemo.api
                 }
             });
 
+            UpdateCredentials(oAuthCredentials);
+        }
+
+        public void UpdateCredentials(OAuthCredentials oAuthCredentials)
+        {
             TokenResponse responseToken = new TokenResponse()
             {
                 AccessToken = oAuthCredentials.access_token,
@@ -57,19 +74,107 @@ namespace googleassistantcsharpdemo.api
             embeddedAssistantClient = new EmbeddedAssistant.EmbeddedAssistantClient(channel);
         }
 
-        public void updateCredentials(OAuthCredentials oAuthCredentials)
+        public async Task TextRequestAssistant(string request)
         {
+            AsyncDuplexStreamingCall<AssistRequest, AssistResponse> assist = embeddedAssistantClient.Assist();
 
+            requestStream = assist.RequestStream;
+            responseStream = assist.ResponseStream;
+
+            await requestStream.WriteAsync(GetConfigRequest(request));
+
+            await WaitForResponse();
         }
 
-        public void requestAssistant(byte[] request)
+        private async Task WaitForResponse()
         {
-
+            var response = await responseStream.MoveNext();
+            if (response)
+            {
+                AssistResponse currentResponse = responseStream.Current;
+                OnNext(currentResponse);
+            }
         }
 
-        public string getTextResponse()
+        private void OnNext(AssistResponse value)
         {
-            return "";
+            if (value.AudioOut != null)
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    using (BinaryWriter writer = new BinaryWriter(stream))
+                    {
+                        writer.Write(value.AudioOut.AudioData.ToByteArray());
+                    }
+                    currentAudioResponse = stream.ToArray();
+                }
+            }
+
+            if (value.DialogStateOut != null)
+            {
+                currentConversationState = value.DialogStateOut.ConversationState;
+
+                if (!string.IsNullOrEmpty(value.DialogStateOut.SupplementalDisplayText))
+                {
+
+                    currentTextResponse = value.DialogStateOut.SupplementalDisplayText;
+                }
+            }
+        }
+
+        public byte[] GetAudioResponse()
+        {
+            return currentAudioResponse;
+        }
+
+        public string GetTextResponse()
+        {
+            return currentTextResponse;
+        }
+
+        private AssistRequest GetConfigRequest(string textQuery)
+        {
+            var audioInConfig = new AudioInConfig()
+            {
+                Encoding = AudioInConfig.Types.Encoding.Linear16,
+                SampleRateHertz = assistantConf.audioSampleRate
+            };
+
+            var audioOutConfig = new AudioOutConfig()
+            {
+                Encoding = AudioOutConfig.Types.Encoding.Linear16,
+                SampleRateHertz = assistantConf.audioSampleRate,
+                VolumePercentage = assistantConf.volumePercent,
+            };
+
+            var dialogStateInConfig = new DialogStateIn()
+            {
+                // We set the us local as default
+                LanguageCode = assistantConf.languageCode,
+                ConversationState = currentConversationState
+            };
+
+            var deviceConfig = new DeviceConfig()
+            {
+                DeviceModelId = deviceModel.deviceModelId,
+                DeviceId = device.id
+            };
+
+            var assistConfig = new AssistConfig()
+            {
+                AudioInConfig = audioInConfig,
+                AudioOutConfig = audioOutConfig,
+                DeviceConfig = deviceConfig,
+                DialogStateIn = dialogStateInConfig,
+                TextQuery = textQuery
+            };
+
+            AssistRequest assistRequest = new AssistRequest()
+            {
+                Config = assistConfig
+            };
+
+            return assistRequest;
         }
     }
 }

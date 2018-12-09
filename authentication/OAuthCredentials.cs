@@ -1,5 +1,5 @@
 ﻿using System;
-namespace googleassistantcsharpdemo.authentication
+namespace GAssistant.Authentication
 {
     [Serializable]
     public class OAuthCredentials

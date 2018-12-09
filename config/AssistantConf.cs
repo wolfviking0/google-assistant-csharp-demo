@@ -1,5 +1,5 @@
 ﻿using System;
-namespace googleassistantcsharpdemo.config
+namespace GAssistant.Config
 {
     [Serializable]
     public class AssistantConf
@@ -11,5 +11,7 @@ namespace googleassistantcsharpdemo.config
         public int chunkSize { get; set; }
 
         public int volumePercent { get; set; }
+
+        public string languageCode { get; set; }
     }
 }

@@ -1,38 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using googleassistantcsharpdemo.api;
-using googleassistantcsharpdemo.authentication;
-using googleassistantcsharpdemo.config;
-using googleassistantcsharpdemo.device;
+using System.Threading;
+using GAssistant.Api;
+using GAssistant.Authentication;
+using GAssistant.Config;
+using GAssistant.Device;
 using Newtonsoft.Json;
 
-namespace googleassistantcsharpdemo
+namespace GAssistant
 {
     class MainClass
     {
         public static void Main(string[] args)
         {
             Logger.Init();
-
-            // GENERATE THE XML CONF FILE
-            //FactoryConf fc = new FactoryConf();
-            //fc.assistantConf = new AssistantConf();
-            //fc.audioConf = new AudioConf();
-            //fc.authenticationConf = new AuthenticationConf();
-            //fc.deviceRegisterConf = new DeviceRegisterConf();
-            //fc.ioConf = new IoConf();
-            //XmlSerializer xs = new XmlSerializer(typeof(FactoryConf));
-            //FileStream fsout = new FileStream("reference.conf", FileMode.Create, FileAccess.Write, FileShare.None);
-            //xs.Serialize(fsout, fc);
-
-            // GENERATE THE JSON CONF FILE
-            //using (StreamWriter file = File.CreateText("resources/reference_private.conf"))
-            //{
-            //    JsonSerializer serializer = new JsonSerializer();
-            //    serializer.Formatting = Formatting.Indented;
-            //    serializer.Serialize(file, fc);
-            //}
 
             // LOAD REFERENCES CONF
             FactoryConf fc = null;
@@ -44,39 +26,45 @@ namespace googleassistantcsharpdemo
 
             // Authentication
             AuthenticationHelper authenticationHelper = new AuthenticationHelper(fc.authenticationConf);
-            authenticationHelper.authenticate();
+            authenticationHelper.Authenticate();
 
             // Register Device model and device
-            DeviceRegister deviceRegister = new DeviceRegister(fc.deviceRegisterConf, authenticationHelper.getOAuthCredentials().access_token);
-            deviceRegister.register();
-
+            DeviceRegister deviceRegister = new DeviceRegister(fc.deviceRegisterConf, authenticationHelper.GetOAuthCredentials().access_token);
+            deviceRegister.Register();
 
             // Build the client (stub)
-            AssistantClient assistantClient = new AssistantClient(authenticationHelper.getOAuthCredentials(), fc.authenticationConf, fc.assistantConf,
-            deviceRegister.getDeviceModel(), deviceRegister.getDevice());
+            AssistantClient assistantClient = new AssistantClient(authenticationHelper.GetOAuthCredentials(), fc.authenticationConf, fc.assistantConf,
+            deviceRegister.GetDeviceModel(), deviceRegister.GetDevice());
 
-
-            // Main loop
-            //while (true)
+            // Main loop 
+            bool isDone = false;
+            while (!isDone)
             {
                 // Check if we need to refresh the access token to request the api
-                if (authenticationHelper.expired())
+                if (authenticationHelper.Expired())
                 {
-                    authenticationHelper.refreshAccessToken();
+                    authenticationHelper.RefreshAccessToken();
 
-                    assistantClient.updateCredentials(authenticationHelper.getOAuthCredentials());
+                    assistantClient.UpdateCredentials(authenticationHelper.GetOAuthCredentials());
                 }
 
-                Console.WriteLine("Tap your request and press enter...");
-                string query = Console.ReadLine();
-              
-                byte[] request = Encoding.ASCII.GetBytes(query);
+                {
+                    Logger.Get().Debug("Tap your request and press enter... (Tap quit to exit)");
 
-                // requesting assistant with text query
-                assistantClient.requestAssistant(request);
+                    string query = Console.ReadLine();
 
-                Logger.Get().Debug(assistantClient.getTextResponse());
+                    if (query.ToLower().Equals("quit")) break;
+                    if (query.Length == 0) continue;
+
+                    // requesting assistant with text query
+                    assistantClient.TextRequestAssistant(query).Wait();
+
+                    Logger.Get().Debug(">> " + assistantClient.GetTextResponse());
+                    Logger.Get().Debug("   (AUDIO : " + (assistantClient.GetAudioResponse() != null ? assistantClient.GetAudioResponse().Length:0) + ")");
+                }
             }
+
+            Logger.Get().Debug("FINISH");
         }
     }
 }

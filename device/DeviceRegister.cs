@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using googleassistantcsharpdemo.config;
+using GAssistant.Config;
 using Newtonsoft.Json;
 
-namespace googleassistantcsharpdemo.device
+namespace GAssistant.Device
 {
     public class DeviceRegister
     {
@@ -11,7 +11,7 @@ namespace googleassistantcsharpdemo.device
 
         private DeviceModel deviceModel;
 
-        private Device device;
+        private DeviceDesc device;
 
         private DeviceInterface deviceInterface;
 
@@ -22,26 +22,26 @@ namespace googleassistantcsharpdemo.device
             deviceInterface = new DeviceInterface(deviceRegisterConf.apiEndpoint, accessToken);
         }
 
-        public void register()
+        public void Register()
         {
             string projectId = deviceRegisterConf.projectId;
 
-            deviceModel = registerModel(projectId);
+            deviceModel = RegisterModel(projectId);
 
-            device = registerInstance(projectId, deviceModel.deviceModelId);
+            device = RegisterInstance(projectId, deviceModel.deviceModelId);
         }
 
-        public DeviceModel getDeviceModel()
+        public DeviceModel GetDeviceModel()
         {
             return deviceModel;
         }
 
-        public Device getDevice()
+        public DeviceDesc GetDevice()
         {
             return device;
         }
 
-        private T readFromFile<T>(string filePath, Type targetClass)
+        private T ReadFromFile<T>(string filePath, Type targetClass)
         {
             if (File.Exists(filePath)) {
                 try
@@ -61,12 +61,11 @@ namespace googleassistantcsharpdemo.device
             return (T)(Object)null;
         }
 
-        private DeviceModel registerModel(string projectId) {
+        private DeviceModel RegisterModel(string projectId) {
 
-            DeviceModel optionalDeviceModel = readFromFile<DeviceModel>(deviceRegisterConf.deviceModelFilePath, typeof(DeviceModel));
+            DeviceModel optionalDeviceModel = ReadFromFile<DeviceModel>(deviceRegisterConf.deviceModelFilePath, typeof(DeviceModel));
             if (optionalDeviceModel != null)
             {
-                Logger.Get().Debug("Got device model from file");
                 return optionalDeviceModel;
             }
 
@@ -82,14 +81,12 @@ namespace googleassistantcsharpdemo.device
             devModel.deviceModelId = modelId;
             devModel.projectId = projectId;
             devModel.name = string.Format("projects/{0}/deviceModels/{1}", projectId, modelId);
-            // https://developers.google.com/assistant/sdk/reference/device-registration/model-and-instance-schemas#device_model_json
-            // Light does not fit this project but there is nothing better in the API
             devModel.deviceType = "action.devices.types.AUTO";
             devModel.manifest = manifest;
 
             try {
                 Logger.Get().Debug("Creating device model");
-                DeviceModel response = deviceInterface.registerModel(projectId, devModel);
+                DeviceModel response = deviceInterface.RegisterModel(projectId, devModel);
 
                 if (response != null) {
                     using (StreamWriter file = File.CreateText(deviceRegisterConf.deviceModelFilePath))
@@ -102,24 +99,22 @@ namespace googleassistantcsharpdemo.device
                 }
             } catch (IOException e) 
             {
-                Logger.Get().Error("Error during registration of the device model " + e);
+                Logger.Get().Error("Error during RegisterModel : " + e);
             }
 
             return null;
         }
 
 
-        private Device registerInstance(string projectId, string modelId)
+        private DeviceDesc RegisterInstance(string projectId, string modelId)
         {
-            Device optionalDevice = readFromFile<Device>(deviceRegisterConf.deviceInstanceFilePath, typeof(Device));
+            DeviceDesc optionalDevice = ReadFromFile<DeviceDesc>(deviceRegisterConf.deviceInstanceFilePath, typeof(DeviceDesc));
             if (optionalDevice != null)
             {
-                Logger.Get().Debug("Got device from file");
                 return optionalDevice;
             }
 
-
-            Device dev = new Device();
+            DeviceDesc dev = new DeviceDesc();
             dev.id = Guid.NewGuid().ToString();
             dev.modelId = modelId;
 
@@ -127,8 +122,7 @@ namespace googleassistantcsharpdemo.device
             dev.clientType = "SDK_SERVICE";
 
             try {
-                Logger.Get().Debug("Creating device instance");
-                Device response = deviceInterface.registerDevice(projectId, dev);
+                DeviceDesc response = deviceInterface.RegisterDevice(projectId, dev);
                 if (response != null)
                 {
                     using (StreamWriter file = File.CreateText(deviceRegisterConf.deviceInstanceFilePath))
@@ -140,7 +134,7 @@ namespace googleassistantcsharpdemo.device
                     return response;
                 }
             } catch (IOException e) {
-                Logger.Get().Error("Error during registration of the device instance " + e);
+                Logger.Get().Error("Error during RegisterInstance : " + e);
             }
 
             return null;
