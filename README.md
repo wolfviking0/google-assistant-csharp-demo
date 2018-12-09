@@ -34,6 +34,3 @@ The first time the demo will open the browser in order to allow your device.
 Connect with your google email, then allow/authorise your project. Copy the token code into the terminal then press enter (This step will be just for the first launch).
 After that just enter your request and press enter.
 
-## Limitations
-
-The current version do not support Audio Input and Audio Output.
