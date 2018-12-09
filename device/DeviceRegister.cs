@@ -85,7 +85,6 @@ namespace GAssistant.Device
             devModel.manifest = manifest;
 
             try {
-                Logger.Get().Debug("Creating device model");
                 DeviceModel response = deviceInterface.RegisterModel(projectId, devModel);
 
                 if (response != null) {

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using GAssistant.Config;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Util.Store;
 using Newtonsoft.Json;
 
 namespace GAssistant.Authentication
@@ -21,7 +25,37 @@ namespace GAssistant.Authentication
             oAuthClient = new OAuthClient(authenticationConf.googleOAuthEndpoint);
         }
 
-        public void Authenticate()
+        public void AuthenticateWithInput()
+        {
+            try
+            {
+                if (File.Exists(authenticationConf.credentialsFilePath))
+                {
+                    using (StreamReader file = File.OpenText(authenticationConf.credentialsFilePath))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        oAuthCredentials = (OAuthCredentials)serializer.Deserialize(file, typeof(OAuthCredentials));
+                    }
+                }
+                else
+                {
+                    OAuthCredentials optCredentials = RequestAccessTokenWithInput();
+                    if (optCredentials != null) {
+                        oAuthCredentials = optCredentials;
+                        SaveCredentials(); 
+                    } else {
+                        Logger.Get().Error("Request AccessToken Error");
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                Logger.Get().Error("Error during AuthenticateWithInput : " + e);
+            }
+        }
+
+        public async Task Authenticate()
         {
             try {
                 if (File.Exists(authenticationConf.credentialsFilePath))
@@ -33,13 +67,8 @@ namespace GAssistant.Authentication
                     }
                 }
                 else {
-                    OAuthCredentials optCredentials = RequestAccessToken();
-                    if (optCredentials != null) {
-                        oAuthCredentials = optCredentials;
-                        SaveCredentials(); 
-                    } else {
-                        Logger.Get().Error("Request AccessToken Error");
-                    }
+                    await RequestAccessToken();
+                    SaveCredentials();
                 }
 
             } catch (Exception e) {
@@ -55,6 +84,26 @@ namespace GAssistant.Authentication
         public OAuthCredentials GetOAuthCredentials()
         {
             return oAuthCredentials;
+        }
+
+        private async Task RequestAccessToken()
+        {
+
+            using (var stream = new FileStream(@"resources/client_secret.json", FileMode.Open, FileAccess.Read))
+            {
+                UserCredential credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets, new string[] { "openid", authenticationConf.scope }
+                                 , "user", CancellationToken.None, new FileDataStore(authenticationConf.credentialsFilePath));
+
+                await credential.RefreshTokenAsync(CancellationToken.None);
+
+                oAuthCredentials = new OAuthCredentials()
+                {
+                    access_token = credential.Token.AccessToken,
+                    refresh_token = credential.Token.RefreshToken,
+                    id_token = credential.Token.IdToken,
+                    token_type = credential.Token.TokenType
+                };
+            }
         }
 
         public OAuthCredentials RefreshAccessToken() {
@@ -75,7 +124,7 @@ namespace GAssistant.Authentication
             }
         }
 
-        private OAuthCredentials RequestAccessToken() {
+        private OAuthCredentials RequestAccessTokenWithInput() {
             string url = "https://accounts.google.com/o/oauth2/v2/auth?" +
             "scope=" + authenticationConf.scope + "&" +
             "response_type=code&" +

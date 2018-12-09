@@ -75,8 +75,6 @@
     <Compile Include="config\FactoryConf.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="authentication\AuthenticationHelper.cs" />
-    <Compile Include="authentication\OAuthClient.cs" />
-    <Compile Include="authentication\OAuthCredentials.cs" />
     <Compile Include="device\DeviceDesc.cs" />
     <Compile Include="device\DeviceModel.cs" />
     <Compile Include="device\DeviceInterface.cs" />
@@ -88,6 +86,8 @@
     <Compile Include="google\googleapis\Http.cs" />
     <Compile Include="google\googleapis\Status.cs" />
     <Compile Include="google\googleapis\Latlng.cs" />
+    <Compile Include="authentication\OAuthClient.cs" />
+    <Compile Include="authentication\OAuthCredentials.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="config\" />

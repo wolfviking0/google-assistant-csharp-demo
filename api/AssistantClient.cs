@@ -84,10 +84,6 @@ namespace GAssistant.Api
             await requestStream.WriteAsync(GetConfigRequest(request));
             await requestStream.CompleteAsync();
 
-            // First response with text
-            await WaitForResponse();
-
-            // Second response with audio
             await WaitForResponse();
         }
 

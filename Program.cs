@@ -18,7 +18,7 @@ namespace GAssistant
 
             // LOAD REFERENCES CONF
             FactoryConf fc = null;
-            using (StreamReader file = File.OpenText("resources/reference.conf"))
+            using (StreamReader file = File.OpenText("resources/reference_private.conf"))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 fc = (FactoryConf)serializer.Deserialize(file, typeof(FactoryConf));
@@ -26,7 +26,8 @@ namespace GAssistant
 
             // Authentication
             AuthenticationHelper authenticationHelper = new AuthenticationHelper(fc.authenticationConf);
-            authenticationHelper.Authenticate();
+            //authenticationHelper.Authenticate().Wait();
+            authenticationHelper.AuthenticateWithInput();
 
             // Register Device model and device
             DeviceRegister deviceRegister = new DeviceRegister(fc.deviceRegisterConf, authenticationHelper.GetOAuthCredentials().access_token);
