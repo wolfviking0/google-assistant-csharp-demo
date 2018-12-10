@@ -31,6 +31,6 @@ Open the file [resources/reference.conf](https://github.com/wolfviking0/google-a
 
 Open the solution [google-assistant-csharp-demo.sln](https://github.com/wolfviking0/google-assistant-csharp-demo/blob/master/google-assistant-csharp-demo.sln), just press the play button.
 The first time the demo will open the browser in order to allow your device.
-Connect with your google email, then allow/authorise your project. Copy the token code into the terminal then press enter (This step will be just for the first launch).
+Connect with your google email, then allow/authorise your project.
 After that just enter your request and press enter.
 

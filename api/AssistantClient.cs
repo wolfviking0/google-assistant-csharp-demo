@@ -34,7 +34,7 @@ namespace GAssistant.Api
         IClientStreamWriter<AssistRequest> requestStream;
         IAsyncStreamReader<AssistResponse> responseStream;
 
-        private byte[] currentAudioResponse;
+        private List<byte> currentAudioResponse = new List<byte>();
         private string currentTextResponse;
 
         public AssistantClient(OAuthCredentials oAuthCredentials, AuthenticationConf authenticationConf, AssistantConf assistantConf, DeviceModel deviceModel, DeviceDesc device)
@@ -81,9 +81,11 @@ namespace GAssistant.Api
             requestStream = assist.RequestStream;
             responseStream = assist.ResponseStream;
 
+            currentAudioResponse.Clear();
+            currentTextResponse = "";
+
             await requestStream.WriteAsync(GetConfigRequest(request));
             await requestStream.CompleteAsync();
-
             await WaitForResponse();
         }
 
@@ -94,6 +96,7 @@ namespace GAssistant.Api
             {
                 AssistResponse currentResponse = responseStream.Current;
                 OnNext(currentResponse);
+                await WaitForResponse();
             }
         }
 
@@ -107,7 +110,7 @@ namespace GAssistant.Api
                     {
                         writer.Write(value.AudioOut.AudioData.ToByteArray());
                     }
-                    currentAudioResponse = stream.ToArray();
+                    currentAudioResponse.AddRange(stream.ToArray());
                 }
             }
 
@@ -117,7 +120,6 @@ namespace GAssistant.Api
 
                 if (!string.IsNullOrEmpty(value.DialogStateOut.SupplementalDisplayText))
                 {
-
                     currentTextResponse = value.DialogStateOut.SupplementalDisplayText;
                 }
             }
@@ -125,7 +127,7 @@ namespace GAssistant.Api
 
         public byte[] GetAudioResponse()
         {
-            return currentAudioResponse;
+            return currentAudioResponse.ToArray();
         }
 
         public string GetTextResponse()

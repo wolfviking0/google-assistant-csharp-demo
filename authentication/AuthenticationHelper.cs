@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 
 namespace GAssistant.Authentication
 {
-
     public class AuthenticationHelper
     {
         private AuthenticationConf authenticationConf;
@@ -88,22 +87,26 @@ namespace GAssistant.Authentication
 
         private async Task RequestAccessToken()
         {
+            ClientSecrets secret = new ClientSecrets();
+            secret.ClientId = authenticationConf.clientId;
+            secret.ClientSecret = authenticationConf.clientSecret;
 
-            using (var stream = new FileStream(@"resources/client_secret.json", FileMode.Open, FileAccess.Read))
+            UserCredential credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                secret, 
+                new string[] { "openid", authenticationConf.scope },
+                "user", 
+                CancellationToken.None, 
+                new FileDataStore(authenticationConf.credentialsFilePath));
+
+            await credential.RefreshTokenAsync(CancellationToken.None);
+
+            oAuthCredentials = new OAuthCredentials()
             {
-                UserCredential credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets, new string[] { "openid", authenticationConf.scope }
-                                 , "user", CancellationToken.None, new FileDataStore(authenticationConf.credentialsFilePath));
-
-                await credential.RefreshTokenAsync(CancellationToken.None);
-
-                oAuthCredentials = new OAuthCredentials()
-                {
-                    access_token = credential.Token.AccessToken,
-                    refresh_token = credential.Token.RefreshToken,
-                    id_token = credential.Token.IdToken,
-                    token_type = credential.Token.TokenType
-                };
-            }
+                access_token = credential.Token.AccessToken,
+                refresh_token = credential.Token.RefreshToken,
+                id_token = credential.Token.IdToken,
+                token_type = credential.Token.TokenType
+            };
         }
 
         public OAuthCredentials RefreshAccessToken() {

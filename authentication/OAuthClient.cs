@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 
 namespace GAssistant.Authentication
 {
+    [Serializable]
     public class OAuthClient
     {
         private string googleOAuthEndpoint;
@@ -20,7 +21,7 @@ namespace GAssistant.Authentication
         {
             try
             {
-                string url = string.Format("{0}token", googleOAuthEndpoint);
+                string url = string.Format("{0}", googleOAuthEndpoint);
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 
@@ -52,7 +53,7 @@ namespace GAssistant.Authentication
         {
             try
             {
-                string url = string.Format("{0}token", googleOAuthEndpoint);
+                string url = string.Format("{0}", googleOAuthEndpoint);
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 

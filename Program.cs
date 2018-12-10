@@ -26,8 +26,8 @@ namespace GAssistant
 
             // Authentication
             AuthenticationHelper authenticationHelper = new AuthenticationHelper(fc.authenticationConf);
-            //authenticationHelper.Authenticate().Wait();
-            authenticationHelper.AuthenticateWithInput();
+            authenticationHelper.Authenticate().Wait();
+            //authenticationHelper.AuthenticateWithInput();
 
             // Register Device model and device
             DeviceRegister deviceRegister = new DeviceRegister(fc.deviceRegisterConf, authenticationHelper.GetOAuthCredentials().access_token);
