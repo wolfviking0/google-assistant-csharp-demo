@@ -99,9 +99,11 @@
     <EmbeddedResource Include="resources\reference.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <!--
     <EmbeddedResource Include="resources\reference_private.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+	-->
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
